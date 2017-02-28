@@ -52,7 +52,7 @@ if __name__ == '__main__':
                     print(repr(mspdebug.run_continue()))
                     running = True
                 elif line.strip():
-                    print(mspdebug.run(line.strip()))
+                    print(mspdebug.run_command(line.strip()))
                 else:
                     print('no command: {}'.format(repr(line)))
                 sys.stdout.flush()

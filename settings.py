@@ -7,6 +7,14 @@ mspdebug = 'mspdebug'
 mspdebug_driver = 'tilib'
 mspdebug_prompt = '(mspdebug) '
 
+# things are currently very broken with breakpoints...
+mspdebug_cmd_blacklist = {
+    'alias',
+    'blow_jtag_fuse',
+    'exit',
+    'run',
+}
+
 status_dir = '/tmp/py-mspdebug-1000'
 status_fname = 'status.json'
 status_path = os.path.join(status_dir, status_fname)

@@ -1,6 +1,6 @@
 import settings
 import manager
-import interface
+import utils
 
 import pexpect
 from pexpect.replwrap import REPLWrapper
@@ -97,17 +97,65 @@ class Mspdebug(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.exit_repl()
         self.close_log()
-
-    def run(self, cmd):
-        return self.repl.run_command(cmd)
-
-    # replwrap isn't going to like the non-returning run procedure of mspdebug...
+        
+    # raw text api
+        
+    def run_command(self, cmd):
+        cleaned = cmd.strip()
+        if cleaned:
+            cmd_args = cleaned.split()
+            if cmd_args[0] in settings.mspdebug_cmd_blacklist:
+                return '{:s}: blacklisted!'.format(cmd_args[0])
+            else:
+                return self.repl.run_command(cleaned)
+        else:
+            return '{:s}: no command'.format(repr(cmd))
 
     def run_continue(self):
         self.spawn.sendline('run')
-        return self.spawn.expect_exact('Running. Press Ctrl+C to interrupt...')
+        self.spawn.expect_exact('Running. Press Ctrl+C to interrupt...')
+        return self.spawn.before
 
     def interrupt(self):
         self.spawn.sendintr()
-        # could use self.spawn.before here to get any information printed before the prompt
-        return self.spawn.expect_exact(settings.mspdebug_prompt)
+        self.spawn.expect_exact(settings.mspdebug_prompt)
+        return self.spawn.before
+
+    # standard python-level api
+
+    def reset(self):
+        self.run_command('reset')
+
+    def prog(self, fname):
+        self.run_command('prog {:s}'.format(fname))
+
+    def mw(self, addr, pattern):
+        self.run_command(('mw {:#x}' + (' {:#x}' * len(pattern))).format(addr, *pattern))
+
+    def fill(self, addr, size, pattern):
+        self.run_command(('fill {:#x} {:d}' + (' {:#x}' * len(pattern))).format(addr, size, *pattern))
+
+    def setreg(self, register, value):
+        self.run_command('set {:d} {:#x}'.format(register, value))
+
+    def md(self, addr, size):
+        raw_output = self.run_command('md {:#x} {:d}'.format(addr, size))
+        base_addr, data = utils.parse_mem(raw_output)
+        assert base_addr == addr
+        return data
+
+    def regs(self):
+        raw_output = self.run_command('regs')
+        return utils.parse_regs(raw_output)
+
+    def step(self):
+        raw_output = self.run_command('step')
+        regs = utils.parse_regs(raw_output)
+        return regs[0]
+
+    def run(self, interval = 0.5):
+        self.run_continue()
+        time.sleep(interval)
+        raw_output = self.interrupt()
+        regs = utils.parse_regs(raw_output)
+        return regs[0]
