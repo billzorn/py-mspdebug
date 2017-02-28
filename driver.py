@@ -68,7 +68,7 @@ class Mspdebug(object):
 
             try:
                 P = pexpect.spawn('mspdebug', mspargs, encoding='ascii', logfile=self.log_f)
-                R = REPLWrapper(P, '(mspdebug) ', None)
+                R = REPLWrapper(P, settings.mspdebug_prompt, None)
                 manager.claim_tty(self.tty, P.pid)
                 spawn = P
                 repl = R
@@ -103,5 +103,11 @@ class Mspdebug(object):
 
     # replwrap isn't going to like the non-returning run procedure of mspdebug...
 
+    def run_continue(self):
+        self.spawn.sendline('run')
+        return self.spawn.expect_exact('Running. Press Ctrl+C to interrupt...')
+
     def interrupt(self):
         self.spawn.sendintr()
+        # could use self.spawn.before here to get any information printed before the prompt
+        return self.spawn.expect_exact(settings.mspdebug_prompt)

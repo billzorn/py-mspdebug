@@ -39,9 +39,22 @@ if __name__ == '__main__':
         with driver.Mspdebug() as mspdebug:
             print('mspdebug on {}'.format(mspdebug.tty))
             sys.stdout.flush()
-            
+
+            running = False
             for line in sys.stdin:
-                print(mspdebug.run(line.strip()))
+                if running:
+                    print('first need to interrupt')
+                    print(repr(mspdebug.interrupt()))
+                    running = False
+                    
+                if 'run' in line:
+                    print('issuing continue to target')
+                    print(repr(mspdebug.run_continue()))
+                    running = True
+                elif line.strip():
+                    print(mspdebug.run(line.strip()))
+                else:
+                    print('no command: {}'.format(repr(line)))
                 sys.stdout.flush()
 
     exit(0)

@@ -5,6 +5,7 @@ import re
 interpreter = 'python'
 mspdebug = 'mspdebug'
 mspdebug_driver = 'tilib'
+mspdebug_prompt = '(mspdebug) '
 
 status_dir = '/tmp/py-mspdebug-1000'
 status_fname = 'status.json'
