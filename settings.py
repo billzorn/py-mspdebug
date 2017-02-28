@@ -32,3 +32,14 @@ def make_log_spacer():
 
 def make_log_error_re():
     return re.compile(r'.*?\(error = ([0-9]+)\)', flags=re.DOTALL)
+
+# commands for external text protocol
+prot_reset = 'reset'
+prot_prog = 'prog'
+prot_mw = 'mw'
+prot_fill = 'fill'
+prot_setreg = 'setreg'
+prot_md = 'md'
+prot_regs = 'regs'
+prot_step = 'step'
+prot_run = 'run'

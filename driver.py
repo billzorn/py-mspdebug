@@ -5,6 +5,7 @@ import utils
 import pexpect
 from pexpect.replwrap import REPLWrapper
 import os
+import time
 
 
 def logpath(tty):

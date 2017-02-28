@@ -2,6 +2,7 @@
 
 import manager
 import driver
+import interface
 
 import argparse
 import sys
@@ -16,6 +17,8 @@ if __name__ == '__main__':
                         help='check status of a comma-separated list of ttys')
     parser.add_argument('-g', '--get', default='', metavar='TTYS',
                         help='get status of a comma-separated list of ttys')
+    parser.add_argument('-i', '--interactive', action='store_true',
+                        help='launch a human-usable repl')
 
     args = parser.parse_args()
     go = True
@@ -35,26 +38,14 @@ if __name__ == '__main__':
         manager.display()
         go = False
 
-    if go:
+    if args.interactive or go:
         with driver.Mspdebug() as mspdebug:
-            print('mspdebug on {}'.format(mspdebug.tty))
+            sys.stdout.write('{:s}\n'.format(mspdebug.tty))
             sys.stdout.flush()
 
-            running = False
-            for line in sys.stdin:
-                if running:
-                    print('first need to interrupt')
-                    print(repr(mspdebug.interrupt()))
-                    running = False
-                    
-                if 'run' in line:
-                    print('issuing continue to target')
-                    print(repr(mspdebug.run_continue()))
-                    running = True
-                elif line.strip():
-                    print(mspdebug.run_command(line.strip()))
-                else:
-                    print('no command: {}'.format(repr(line)))
-                sys.stdout.flush()
+            if args.interactive:
+                interface.repl(mspdebug, f_in=sys.stdin, f_out=sys.stdout)
+            else:
+                interface.protocol(mspdebug, f_in=sys.stdin, f_out=sys.stdout)
 
     exit(0)

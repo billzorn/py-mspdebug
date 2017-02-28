@@ -34,11 +34,11 @@ def parse_regs(text):
 mem_re = re.compile(r'\s*([0-9A-F]+):([\s0-9A-F]+)\|.*\|', flags=re.I)
 
 def parse_mem(text):
-    rows = reg_re.findall(text)
+    rows = mem_re.findall(text)
     base_addr = None
     data = []
     for addr, mem in rows:
         if base_addr is None:
-            base_addr = addr
+            base_addr = int(addr, 16)
         data += [int(x, 16) for x in mem.split()]
     return base_addr, data
