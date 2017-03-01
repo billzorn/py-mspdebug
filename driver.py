@@ -74,7 +74,6 @@ class Mspdebug(object):
                 spawn = P
                 repl = R
             except pexpect.EOF:
-                #import pdb; pdb.set_trace()
                 error_code = self.get_error_from_log()
                 if error_code in settings.errors_to_mark:
                     manager.mark_tty(self.tty)
