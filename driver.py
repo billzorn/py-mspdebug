@@ -37,6 +37,7 @@ class Mspdebug(object):
 
     # This is kind of a stupid hack, but it looks like REPLWrapper blows away any
     # info that would let us pull this out of the pexpect.spawn object directly.
+    #   Or can we just use self.spawn.before ??
     def get_error_from_log(self):
         self.log_f.flush()
         with open(logpath(self.tty), 'rb') as f:
@@ -125,9 +126,19 @@ class Mspdebug(object):
 
     def reset(self):
         self.run_command('reset')
+        reg_output = self.run_command('regs')
+        regs = utils.parse_regs(reg_output)
+        return regs[0]
 
     def prog(self, fname):
-        self.run_command('prog {:s}'.format(fname))
+        raw_output = self.run_command('prog {:s}'.format(fname))
+        imgsize = utils.parse_prog(raw_output)
+        if imgsize is None:
+            return raw_output.strip()
+        else:
+            reg_output = self.run_command('regs')
+            regs = utils.parse_regs(reg_output)
+            return regs[0]
 
     def mw(self, addr, pattern):
         self.run_command(('mw {:#x}' + (' {:#x}' * len(pattern))).format(addr, *pattern))

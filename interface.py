@@ -14,15 +14,21 @@ def prot_execute(mspdebug, f_out, args):
     cmd = args[0]
         
     if cmd == settings.prot_reset:
-        mspdebug.reset()
-        
+        data = mspdebug.reset()
+        f_out.write('{:#x}'.format(data))
+
     elif cmd == settings.prot_prog:
         try:
             fname = args[1]
         except Exception as e:
             f_out.write('error: {}: input: {}'.format(settings.prot_prog, repr(e)))
         else:
-            mspdebug.prog(fname)
+            data = mspdebug.prog(fname)
+            # I don't like inspecting the argument with isinstance here...
+            if isinstance(data, str):
+                f_out.write('error: {}'.format(data.replace('\n', ' ')))
+            else:
+                f_out.write('{:#x}'.format(data))
 
     elif cmd == settings.prot_mw:
         try:

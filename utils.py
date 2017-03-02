@@ -42,3 +42,12 @@ def parse_mem(text):
             base_addr = int(addr, 16)
         data += [int(x, 16) for x in mem.split()]
     return base_addr, data
+
+prog_re = re.compile(r'Done, ([0-9]+) bytes total', flags=re.I)
+
+def parse_prog(text):
+    match = prog_re.search(text)
+    if match is None:
+        return None
+    else:
+        return int(match.group(1))
