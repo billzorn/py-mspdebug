@@ -14,7 +14,10 @@
  msp-md
  msp-regs
  msp-step
- msp-run)
+ msp-run
+ ; bonus
+ msp-read-word
+ msp-read-dword)
 
 ; For simplicity, we'll keep this simple and provide a struct type
 ; and a bunch of methods that act on it; a better programming paradigm
@@ -101,3 +104,22 @@
 
 (define (msp-run mspd seconds)
   (hex->number (mspdebug-cmd mspd (format "run ~a" seconds))))
+
+; Bonus interface
+
+; endianness
+(define (le-word bytepair)
+  (bitwise-ior (first bytepair) (arithmetic-shift (second bytepair) 8)))
+(define (le-dword bytequartet)
+  (bitwise-ior
+   (first bytequartet)
+   (arithmetic-shift (second bytequartet) 8)
+   (arithmetic-shift (third bytequartet) 16)
+   (arithmetic-shift (fourth bytequartet) 24)))
+
+(define (msp-read-word mspd addr)
+  (le-word (msp-md mspd addr 2)))
+
+(define (msp-read-dword mspd addr)
+  (le-dword (msp-md mspd addr 4)))
+
