@@ -17,7 +17,9 @@
  msp-run
  ; bonus
  msp-read-word
- msp-read-dword)
+ msp-read-dword
+ ; elf loader!
+ msp-loadelf)
 
 ; For simplicity, we'll keep this simple and provide a struct type
 ; and a bunch of methods that act on it; a better programming paradigm
@@ -123,3 +125,27 @@
 (define (msp-read-dword mspd addr)
   (le-dword (msp-md mspd addr 4)))
 
+; Python elf loading utilities
+
+(define (msp-loadelf fname)
+  (let ([abspath (path->complete-path fname)])
+    (unless (file-exists? abspath)
+      (raise-argument-error 'msp-loadelf "path to elf file" abspath))
+    (let*-values
+        ([(sp sp-stdout sp-stdin sp-stderr) (subprocess #f #f #f (find-executable-path "pymspdebug") "-loadelf" fname)]
+         [(n) (string->number (read-line sp-stdout))])
+      (when (false? n)
+        (raise-argument-error 'msp-loadelf "not a valid elf file" abspath))
+      (let ([elf-image
+             (for/list ([i (range n)])
+               (let ([addr (read-line sp-stdout)]
+                     [data (read-line sp-stdout)])
+                 (cons (hex->number addr)
+                       (map hex->number (string-split data)))))])
+        (close-output-port sp-stdin)
+        (subprocess-wait sp)
+        (port->string sp-stdout)
+        (port->string sp-stderr)
+        (close-input-port sp-stdout)
+        (close-input-port sp-stderr)
+        elf-image))))
